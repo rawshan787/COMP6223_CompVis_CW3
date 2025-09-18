@@ -107,11 +107,3 @@ To run the complete VS-CNN pipeline, follow these steps:
    ```
 
 Note: The AlexNet weights file (`alexnet_places365.pth`) should be in the working directory.
-
-## Team & Contribution
-
-- Al Rawshan (aar1g20@soton.ac.uk)          Run 3 - 20%
-- Vidushi Yaksh (vy1g21@soton.ac.uk)        Run 3 - 20%
-- Devika Pradeep Lal (dpl1g21@soton.ac.uk)  Run 2 - 20%
-- James Parkes (jp4g20@soton.ac.uk)         Run 2 - 20%
-- Nadia Hoque (mhn1n23@soton.ac.uk)         Run 1 - 20%
