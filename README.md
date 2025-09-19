@@ -7,6 +7,8 @@ Figure 1: Illustration of the three image types used in VS-CNN:
  original inputs (left), VSR images (middle), and VSRE images
  (right)
 
+
+
 This project explores multiple approaches to scene recognition on the 15-scene dataset, advancing from traditional to deep learning-based methods. We begin with a K-Nearest Neighbours classifier using tiny image features, achieving 22.01% accuracy. Next, a Bag-of-Visual-Words model with a linear classifier improves accuracy to 70% by leveraging local image patches and clustering. Finally, a modified Deep Visually Sensitive CNN (VS-CNN) incorporates context-based saliency detection and AlexNet features, followed by PCA and SVM classification, achieving 86.87% accuracy.
 
 We were awarded First Class (100%) grade for this submission.
