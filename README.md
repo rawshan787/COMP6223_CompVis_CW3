@@ -1,117 +1,40 @@
-# COMP6223 Coursework 3
+# Coursework 3: Scene Recognition
+
+![Figure 1: Illustration of the three image types used in VS-CNN:
+ original inputs (left), VSR images (middle), and VSRE images
+ (right)](D:\unidrivebackup\OneDrive - University of Southampton\EE-Y5\COMP6223_CompVis\COMP6223_CompVis_CW3\Screenshot 2025-09-19 025401.png)
+
 
 This project explores multiple approaches to scene recognition on the 15-scene dataset, advancing from traditional to deep learning-based methods. We begin with a K-Nearest Neighbours classifier using tiny image features, achieving 22.01% accuracy. Next, a Bag-of-Visual-Words model with a linear classifier improves accuracy to 70% by leveraging local image patches and clustering. Finally, a modified Deep Visually Sensitive CNN (VS-CNN) incorporates context-based saliency detection and AlexNet features, followed by PCA and SVM classification, achieving 86.87% accuracy.
 
----
+We were awarded First Class (100%) grade for this submission.
 
-## Table of Contents
+## 1. Run 1: K-Nearest-Neighbors
 
-- [Run 1: K-Nearest Neighbours](#run-1-tiny-image-knn-classifier)
-- [Run 2: Linear Classification with BoVW](#run-2-linear-classification-with-bovw)
-- [Run 3: VS-CNN with AlexNet + PCA](#run-3-vs-cnn-with-alexnet--pca)
-- [Team & Contribution](#team--contribution)
+### 1.1. Task Summary
+A K-Nearest Neighbors classifier was implemented using tiny image features (16x16 center-cropped, flattened, and normalized vectors) to establish a performance baseline. The optimal hyperparameter (K=7) was determined through 5-fold cross-validation. This configuration achieved 22.01% accuracy on the test set.
 
----
+### 1.2. Analysis
+The tiny image representation proved fundamentally limited by its discard of high-frequency information and structural details. The resulting 22.01% accuracy confirms that while computationally trivial, this approach lacks the discriminative power necessary for meaningful scene recognition, necessitating more sophisticated feature extraction methods.
 
-## Run 1: Tiny Image KNN Classifier
+## 2. Run 2: Linear Classification with BoVW
 
-**Script**: `run1/scene_classification_tiny_knn.py`  
+### 2.1. Task Summary
+A Bag-of-Visual-Words model was constructed by extracting image patches via sliding window, clustering with K-Means to form a visual vocabulary, and encoding images as histograms of visual word occurrences. A one-vs-rest linear SVM was trained on these representations. Parameter optimization via grid search yielded an optimal configuration (patch size=4, stride=2, 800 clusters) achieving 70.0% accuracy.
 
-**Description**:  
-This method performs scene classification using a **tiny-image feature representation** combined with a **K-Nearest Neighbors (KNN)** classifier. The process includes training on labeled images, selecting the best `K` via cross-validation, and evaluating predictions on a test set.
+### 2.2. Analysis
+Performance exhibited significant class-dependent variance, with high accuracy on scenes containing large distinctive features (e.g., "Forest") and poor performance on texture-heavy indoor scenes (e.g., "Store"). The model's sensitivity to lighting and scale variations, coupled with its reliance on low-level patches rather than invariant descriptors, presents a clear ceiling on its potential performance despite representing a substantial improvement over global features.
 
-### Input Requirements:
+## 3. Run 3: Custom Classifier
 
-Starting at line 191 the following parameters are defined and can be used to direct the code to the correct training and test data paths:
+### 3.1. Task Summary
+A high-performance pipeline was implemented by integrating context-aware saliency detection [1] with deep feature extraction. Saliency maps were generated and used to create enhanced images as shown in Figure 1, followed by feature extraction using a pre-trained AlexNet. Features were normalized [2], reduced via PCA (retaining 99% variance), and classified with a linear SVM. This approach, inspired by the VS-CNN architecture [3], achieved 86.87% accuracy under rigorous 5-fold stratified cross-validation, substantially outperforming a Dense SIFT + SVM baseline (69.27%).
 
-```python
-# === Parameters and paths ===
-train_dir = "..."
-test_dir  = "..."
-answers_file = "answer.txt"
-pred_file    = "run1.txt"
-```
+### 3.2. Analysis
+The results demonstrate the profound superiority of deep, semantically rich features over hand-crafted alternatives. The performance gap to the original VS-CNN paper [3] (97.8%) is attributed to three factors: computational constraints limiting saliency map quality [1], the use of a fixed pre-trained feature extractor without fine-tuning, and the implementation of proper cross-validation versus the paper's averaging over random splits. Nevertheless, the approach validated the core premise that guiding feature extraction with saliency provides measurable performance gains.
 
-_Assign as necessary by user_
 
-## Run 2: Linear Classification with BoVW
-
-**Script**: `run2/main.py`  
-
-**Description**:  
-This method improves upon the KNN approach using Bag-of-Visual-Words (BoVW). It employs local image patches and a clustering method to create a visual vocabulary. A linear classifier is then used to predict scene categories.
-
-### Input Requirements:
-
-At line 365 and 366 the following folder are defined:
-
-```python
-# Define the folder paths for training and testing data
-folder_path = "training/"
-test_folder = "testing/"
-```
-
-_Assign as necessary by user_ - It will produce a warning if the folders provided are not available.
-
-## Run 3: VS-CNN with AlexNet + PCA
-
-**Scripts**:  
-- `image_preprocessing.py`: Prepares images for feature extraction
-- `vsr_generator.py`: Generates saliency maps
-- `vsre_generator.py`: Creates enhanced images using saliency maps
-- `pre_feat_ext.py`: Orchestrates the preprocessing pipeline
-- `full_feature_extraction.py`: Extracts deep features using AlexNet
-- `pca_classifier_validate.py`: Cross-validates model performance
-- `pca_classifier_train.py`: Trains the final model
-- `pca_classifier_predict.py`: Generates predictions on test data
-- `denseSIFT.py`: Traditional baseline for comparison
-
-**Description**:  
-Our custom approach is a modified version of the Visually Sensitive CNN (VS-CNN) that combines deep feature extraction with saliency-based region enhancement. The pipeline consists of three main stages:
-
-1. **Image Preprocessing & Enhancement**:
-   - Convert grayscale images to RGB and resize to 227×227 pixels
-   - Generate saliency maps using a patch-based approach
-   - Create enhanced images by multiplying the original with saliency maps
-
-2. **Deep Feature Extraction**:
-   - Use a pre-trained AlexNet (Places365 weights) to extract fc6 and fc7 features
-   - Extract features from three image variants: original, VSR (saliency map), and VSRE (enhanced)
-   - Concatenate all features into a 24,576-dimensional vector (6 features × 4,096)
-
-3. **Dimensionality Reduction & Classification**:
-   - Apply PCA to reduce dimensions while preserving 99% of variance
-   - Use a linear SVM classifier on the PCA-reduced features
-   - Validate using 5-fold cross-validation (86.87% mean accuracy)
-
-### Input Requirements:
-
-To run the complete VS-CNN pipeline, follow these steps:
-
-1. **Setup file paths in each script**:
-   - Update paths in `pre_feat_ext.py` to point to your training data
-   - Configure paths in `full_feature_extraction.py` for the AlexNet model
-
-2. **Run preprocessing and feature extraction**:
-   ```bash
-   python pre_feat_ext.py
-   python full_feature_extraction.py
-   ```
-   This will generate `vs_cnn_train_features.h5` containing features for all training images.
-
-3. **Validate, train, and predict**:
-   ```bash
-   python pca_classifier_validate.py  # Outputs cross-validation results
-   python pca_classifier_train.py     # Creates svm_pca_model.joblib
-   python pca_classifier_predict.py   # Generates run3.txt with predictions
-   ```
-
-Note: The AlexNet weights file (`alexnet_places365.pth`) should be in the working directory.
-
-## Team & Contribution
-
-- Al Rawshan (aar1g20@soton.ac.uk)          Run 3 - 20%
-- Vidushi Yaksh (vy1g21@soton.ac.uk)        Run 3 - 20%
-- Devika Pradeep Lal (dpl1g21@soton.ac.uk)  Run 2 - 20%
-- James Parkes (jp4g20@soton.ac.uk)         Run 2 - 20%
-- Nadia Hoque (mhn1n23@soton.ac.uk)         Run 1 - 20%
+## References
+[1] S. Goferman, L. Zelnik-Manor, and A. Tal. "Context-aware saliency detection." In _CVPR_, 2010.  
+[2] D. U. Ozsahin et al. "Impact of feature scaling on machine learning models." In _AIE_, 2022.  
+[3] J. Shi et al. "Scene categorization model using deep visually sensitive features." _IEEE Access_, 2019.
