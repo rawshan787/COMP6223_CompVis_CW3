@@ -1,7 +1,5 @@
 # COMP6223 Coursework 3
 
----
-
 ## Table of Contents
 
 - [Run 1: K-Nearest Neighbours](#run-1-tiny-image-knn-classifier)
